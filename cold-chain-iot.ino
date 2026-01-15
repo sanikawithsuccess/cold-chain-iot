@@ -12,7 +12,7 @@ const char* WIFI_PASS = "YOUR-WIFI-PASSWORD";
 
 // ---------- FIREBASE (Realtime DB URL) ----------
 String FIREBASE_URL =
-  "https://YOUR-FIREBASE-DATABASE-LINK.firebaseio.com/";
+  "YOUR-FIREBASE-REAL-TIME-DATABASE-URL";
 
 // ---------- GPS ----------
 TinyGPSPlus gps;
@@ -83,7 +83,7 @@ void loop() {
 
   u8g2.setCursor(0, 36);
   u8g2.print("Sat : ");
-  u8g2.print(gps.satellites.isValid() ? gps.satellites.value() : 0);
+  u8g2.print(gps.satellites.isValid() ? gps.satellites.valuew () : 0);
 
   u8g2.setCursor(64, 36);
   u8g2.print("Fix : ");
@@ -105,13 +105,28 @@ void loop() {
   u8g2.sendBuffer();
 
   // ----- UPLOAD TO FIREBASE -----
-  if (WiFi.status() == WL_CONNECTED && gps.location.isValid()) {
+  if (WiFi.status() == WL_CONNECTED) {
+    
+    // Use GPS if available, otherwise use default coordinates (Mumbai)
+    float latitude = gps.location.isValid() ? gps.location.lat() : 18.9897;
+    float longitude = gps.location.isValid() ? gps.location.lng() : 72.8403;
+
+    Serial.println("\n--- Uploading to Firebase ---");
+    Serial.print("Temperature: "); Serial.println(temperature);
+    Serial.print("Humidity: "); Serial.println(humidity);
+    Serial.print("Latitude: "); Serial.println(latitude, 6);
+    Serial.print("Longitude: "); Serial.println(longitude, 6);
+    Serial.print("GPS Valid: "); Serial.println(gps.location.isValid() ? "YES" : "NO (using default)");
 
     WiFiClientSecure client;
     client.setInsecure();  // required for Firebase HTTPS
 
     HTTPClient https;
     https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+    
+    Serial.print("Connecting to: ");
+    Serial.println(FIREBASE_URL);
+    
     https.begin(client, FIREBASE_URL);
     https.addHeader("Content-Type", "application/json");
 
@@ -119,16 +134,30 @@ void loop() {
       "{"
       "\"temperature\":" + String(temperature, 1) + ","
       "\"humidity\":" + String(humidity, 1) + ","
-      "\"latitude\":" + String(gps.location.lat(), 6) + ","
-      "\"longitude\":" + String(gps.location.lng(), 6) +
+      "\"latitude\":" + String(latitude, 6) + ","
+      "\"longitude\":" + String(longitude, 6) +
       "}";
+
+    Serial.print("JSON payload: ");
+    Serial.println(json);
 
     int httpResponseCode = https.PATCH(json);
 
-    Serial.print("Firebase response: ");
+    Serial.print("Firebase HTTP Response Code: ");
     Serial.println(httpResponseCode);
+    
+    if (httpResponseCode > 0) {
+      String response = https.getString();
+      Serial.print("Response: ");
+      Serial.println(response);
+    } else {
+      Serial.print("Error: ");
+      Serial.println(https.errorToString(httpResponseCode));
+    }
 
     https.end();
+  } else {
+    Serial.println("WiFi not connected!");
   }
 
   delay(5000);   // update every 5 seconds

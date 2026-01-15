@@ -14,13 +14,14 @@ import { getDatabase, ref, onValue } from
   "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD9jlciHRhjKDNtaRsQgEC6da2-6OnqBLM",
-  authDomain: "iot-cold-chain-monitoring.firebaseapp.com",
-  databaseURL: "https://iot-cold-chain-monitoring-default-rtdb.firebaseio.com",
-  projectId: "iot-cold-chain-monitoring",
-  storageBucket: "iot-cold-chain-monitoring.appspot.com",
-  messagingSenderId: "800057423384",
-  appId: "1:800057423384:web:e25e594358c2d7fb0a756d"
+  apiKey: "AIzaSyBjaKjjNBQd_10AHGp0yGs4MRCSzZfDaBA",
+  authDomain: "cold-chain-monitoring-ddd33.firebaseapp.com",
+  databaseURL: "https://cold-chain-monitoring-ddd33-default-rtdb.firebaseio.com",
+  projectId: "cold-chain-monitoring-ddd33",
+  storageBucket: "cold-chain-monitoring-ddd33.firebasestorage.app",
+  messagingSenderId: "941440366744",
+  appId: "1:941440366744:web:8bc530c01327809355b8ed",
+  measurementId: "G-QXYLVV2SSY"
 };
 
 const app = initializeApp(firebaseConfig);
