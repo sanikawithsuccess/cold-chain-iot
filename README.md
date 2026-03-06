@@ -114,10 +114,10 @@ Your Firebase Realtime Database should have the following structure:
 {
   "coldchain": {
     "device1": {
-      "temperature": 28.6,
-      "humidity": 47.6,
-      "latitude": 18.98988,
-      "longitude": 72.840192
+      "sensor1": { "temperature": 28.6, "humidity": 47.6 },
+      "sensor2": { "temperature": 26.3, "humidity": 52.1 },
+      "latitude": 18.9897,
+      "longitude": 72.8403
     }
   }
 }
@@ -143,20 +143,21 @@ This project includes Arduino code for ESP32 to collect real-time sensor data an
 ### Hardware Components
 
 - **ESP32 Development Board** - Main microcontroller
-- **DHT22 Sensor** - Temperature and humidity monitoring
+- **DHT22 Sensor ×2** - Temperature and humidity monitoring (inside cargo & ambient)
 - **NEO-6M GPS Module** - GPS location tracking
 - **SH1106 OLED Display (128x64)** - Local data display
 - **Jumper Wires** - Connections
 
 ### Pin Connections
 
-| Component  | ESP32 Pin | Description                 |
-| ---------- | --------- | --------------------------- |
-| DHT22 Data | GPIO 4    | Temperature/Humidity sensor |
-| GPS RX     | GPIO 16   | GPS module receive          |
-| GPS TX     | GPIO 17   | GPS module transmit         |
-| OLED SDA   | GPIO 21   | I2C data line               |
-| OLED SCL   | GPIO 22   | I2C clock line              |
+| Component     | ESP32 Pin | Description                            |
+| ------------- | --------- | -------------------------------------- |
+| DHT22 #1 Data | GPIO 4    | Inside cargo temp/humidity sensor      |
+| DHT22 #2 Data | GPIO 5    | Ambient / outside temp/humidity sensor |
+| GPS RX        | GPIO 16   | GPS module receive                     |
+| GPS TX        | GPIO 17   | GPS module transmit                    |
+| OLED SDA      | GPIO 21   | I2C data line                          |
+| OLED SCL      | GPIO 22   | I2C clock line                         |
 
 ### Required Arduino Libraries
 
@@ -196,36 +197,39 @@ Install these libraries via Arduino Library Manager:
 ### How It Works
 
 1. **Sensor Reading:**
-
    - DHT22 reads temperature and humidity every 5 seconds
    - GPS module tracks latitude, longitude, and satellite count
    - OLED displays all data locally
 
 2. **Data Upload:**
-
    - ESP32 connects to WiFi
    - Sends JSON data to Firebase via HTTPS
    - Uses PATCH method to update existing data
 
 3. **Data Format:**
+
    ```json
    {
-     "temperature": 28.6,
-     "humidity": 47.6,
-     "latitude": 18.98988,
-     "longitude": 72.840192
+     "sensor1": { "temperature": 28.6, "humidity": 47.6 },
+     "sensor2": { "temperature": 26.3, "humidity": 52.1 },
+     "latitude": 18.9897,
+     "longitude": 72.8403
    }
    ```
+
+   > **Note:** If GPS has no fix, the device falls back to default coordinates (Mumbai: `18.9897, 72.8403`).
 
 ### OLED Display Layout
 
 ```
-Temp: 28.6 C
-Hum : 47.6 %
-Sat : 8      Fix : YES
-Lat: 18.9899
-Lng: 72.8402
+S1 T:28.6C H:47%
+S2 T:26.3C H:52%
+Sat:8        Fix:YES
+Lat:18.9899
+Lng:72.8402
 ```
+
+When GPS has no fix, the last two lines are replaced with `Waiting for GPS`.
 
 ### Troubleshooting
 
